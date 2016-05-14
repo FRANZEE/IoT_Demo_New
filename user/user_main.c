@@ -34,12 +34,6 @@ void user_init(void)
 {
     os_printf("SDK version:%s\n", system_get_sdk_version());
 
-#if ESP_PLATFORM
-    /*Initialization of the peripheral drivers*/
-    /*For light demo , it is user_light_init();*/
-    /* Also check whether assigned ip addr by the router.If so, connect to ESP-server  */
-    user_esp_platform_init();
-#endif
     /*Establish a udp socket to receive local device detect info.*/
     /*Listen to the port 1025, as well as udp broadcast.
     /*If receive a string of device_find_request, it rely its IP address and MAC.*/
