@@ -16,8 +16,6 @@
 
 #include "user_plug.h"
 
-#if PLUG_DEVICE
-
 LOCAL struct plug_saved_param plug_param;
 LOCAL struct keys_param keys;
 LOCAL struct single_key_param *single_key[PLUG_KEY_NUM];
@@ -155,5 +153,3 @@ user_plug_init(void)
 
     PLUG_STATUS_OUTPUT(PLUG_RELAY_LED_IO_NUM, plug_param.status);
 }
-#endif
-
