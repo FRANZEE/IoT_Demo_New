@@ -20,17 +20,10 @@
 #include "user_webserver.h"
 
 #include "upgrade.h"
-#if ESP_PLATFORM
-#include "user_esp_platform.h"
-#endif
 
 #ifdef SERVER_SSL_ENABLE
 #include "ssl/cert.h"
 #include "ssl/private_key.h"
-#endif
-
-#if LIGHT_DEVICE
-#include "user_light.h"
 #endif
 
 LOCAL struct station_config *sta_conf;
@@ -66,18 +59,8 @@ device_get(struct jsontree_context *js_ctx)
     if (os_strncmp(path, "manufacture", 11) == 0) {
         jsontree_write_string(js_ctx, "Espressif Systems");
     } else if (os_strncmp(path, "product", 7) == 0) {
-#if SENSOR_DEVICE
-#if HUMITURE_SUB_DEVICE
-        jsontree_write_string(js_ctx, "Humiture");
-#elif FLAMMABLE_GAS_SUB_DEVICE
-        jsontree_write_string(js_ctx, "Flammable Gas");
-#endif
-#endif
 #if PLUG_DEVICE
         jsontree_write_string(js_ctx, "Plug");
-#endif
-#if LIGHT_DEVICE
-        jsontree_write_string(js_ctx, "Light");
 #endif
     }
 
@@ -135,9 +118,6 @@ version_get(struct jsontree_context *js_ctx)
     char string[32];
 
     if (os_strncmp(path, "hardware", 8) == 0) {
-#if SENSOR_DEVICE
-        os_sprintf(string, "0.3");
-#else
         os_sprintf(string, "0.1");
 #endif
     } else if (os_strncmp(path, "sdk_version", 11) == 0) {
@@ -249,147 +229,6 @@ JSONTREE_OBJECT(response_tree,
                 JSONTREE_PAIR("Response", &status_tree));
 JSONTREE_OBJECT(StatusTree,
                 JSONTREE_PAIR("switch", &response_tree));
-#endif
-
-#if LIGHT_DEVICE
-LOCAL int ICACHE_FLASH_ATTR
-light_status_get(struct jsontree_context *js_ctx)
-{
-    const char *path = jsontree_path_name(js_ctx, js_ctx->depth - 1);
-
-    if (os_strncmp(path, "red", 3) == 0) {
-        jsontree_write_int(js_ctx, user_light_get_duty(LIGHT_RED));
-    } else if (os_strncmp(path, "green", 5) == 0) {
-        jsontree_write_int(js_ctx, user_light_get_duty(LIGHT_GREEN));
-    } else if (os_strncmp(path, "blue", 4) == 0) {
-        jsontree_write_int(js_ctx, user_light_get_duty(LIGHT_BLUE));
-    } else if (os_strncmp(path, "wwhite", 6) == 0) {
-        if(PWM_CHANNEL>LIGHT_WARM_WHITE){
-            jsontree_write_int(js_ctx, user_light_get_duty(LIGHT_WARM_WHITE));
-        }else{
-            jsontree_write_int(js_ctx, 0);
-        }
-    } else if (os_strncmp(path, "cwhite", 6) == 0) {
-        if(PWM_CHANNEL>LIGHT_COLD_WHITE){
-            jsontree_write_int(js_ctx, user_light_get_duty(LIGHT_COLD_WHITE));
-        }else{
-            jsontree_write_int(js_ctx, 0);
-        }
-    } else if (os_strncmp(path, "period", 6) == 0) {
-        jsontree_write_int(js_ctx, user_light_get_period());
-    }
-
-    return 0;
-}
-
-LOCAL int ICACHE_FLASH_ATTR
-light_status_set(struct jsontree_context *js_ctx, struct jsonparse_state *parser)
-{
-    int type;
-    static uint32 r,g,b,cw,ww,period;
-    period = 1000;
-    cw=0;
-    ww=0;
-    extern uint8 light_sleep_flg;
-    
-    while ((type = jsonparse_next(parser)) != 0) {
-        if (type == JSON_TYPE_PAIR_NAME) {
-            if (jsonparse_strcmp_value(parser, "red") == 0) {
-                uint32 status;
-                jsonparse_next(parser);
-                jsonparse_next(parser);
-                status = jsonparse_get_value_as_int(parser);
-                r=status;
-                os_printf("R: %d \n",status);
-                //user_light_set_duty(status, LIGHT_RED);
-                //light_set_aim_r( r);
-            } else if (jsonparse_strcmp_value(parser, "green") == 0) {
-                uint32 status;
-                jsonparse_next(parser);
-                jsonparse_next(parser);
-                status = jsonparse_get_value_as_int(parser);
-                g=status;
-                os_printf("G: %d \n",status);
-                //user_light_set_duty(status, LIGHT_GREEN);
-                //light_set_aim_g( g);
-            } else if (jsonparse_strcmp_value(parser, "blue") == 0) {
-                uint32 status;
-                jsonparse_next(parser);
-                jsonparse_next(parser);
-                status = jsonparse_get_value_as_int(parser);
-                b=status;
-                os_printf("B: %d \n",status);
-                //user_light_set_duty(status, LIGHT_BLUE);
-                //set_aim_b( b);
-            } else if (jsonparse_strcmp_value(parser, "cwhite") == 0) {
-                uint32 status;
-                jsonparse_next(parser);
-                jsonparse_next(parser);
-                status = jsonparse_get_value_as_int(parser);
-                cw=status;
-                os_printf("CW: %d \n",status);
-                //user_light_set_duty(status, LIGHT_BLUE);
-                //set_aim_b( b);
-            } else if (jsonparse_strcmp_value(parser, "wwhite") == 0) {
-                uint32 status;
-                jsonparse_next(parser);
-                jsonparse_next(parser);
-                status = jsonparse_get_value_as_int(parser);
-                ww=status;
-                os_printf("WW: %d \n",status);
-                //user_light_set_duty(status, LIGHT_BLUE);
-                //set_aim_b( b);
-            } else if (jsonparse_strcmp_value(parser, "period") == 0) {
-                uint32 status;
-                jsonparse_next(parser);
-                jsonparse_next(parser);
-                status = jsonparse_get_value_as_int(parser);
-                os_printf("PERIOD: %d \n",status);
-                period=status;
-                //user_light_set_period(status);
-            }else if (jsonparse_strcmp_value(parser, "response") == 0) {
-                uint32 status;
-                jsonparse_next(parser);
-                jsonparse_next(parser);
-                status = jsonparse_get_value_as_int(parser);
-                os_printf("rspneed: %d \n",status);
-                PostCmdNeeRsp = status;
-                
-            }
-        }
-    }
-
-    if((r|g|b|ww|cw) == 0){
-        if(light_sleep_flg==0){
-
-        }
-        
-    }else{
-        if(light_sleep_flg==1){
-            os_printf("modem sleep en\r\n");
-            wifi_set_sleep_type(MODEM_SLEEP_T);
-            light_sleep_flg =0;
-        }
-    }
-    light_set_aim(r,g,b,cw,ww,period);
-    return 0;
-}
-
-LOCAL struct jsontree_callback light_callback =
-    JSONTREE_CALLBACK(light_status_get, light_status_set);
-
-JSONTREE_OBJECT(rgb_tree,
-                JSONTREE_PAIR("red", &light_callback),
-                JSONTREE_PAIR("green", &light_callback),
-                JSONTREE_PAIR("blue", &light_callback),
-                JSONTREE_PAIR("cwhite", &light_callback),
-                JSONTREE_PAIR("wwhite", &light_callback),
-                );
-JSONTREE_OBJECT(sta_tree,
-                JSONTREE_PAIR("period", &light_callback),
-                JSONTREE_PAIR("rgb", &rgb_tree));
-JSONTREE_OBJECT(PwmTree,
-                JSONTREE_PAIR("light", &sta_tree));
 #endif
 
 /******************************************************************************
@@ -992,9 +831,10 @@ restart_10ms_cb(void *arg)
                     wifi_set_opmode(STATION_MODE);
 
                     if (rstparm->parmtype == DEEP_SLEEP) {
-#if SENSOR_DEVICE
-                        system_deep_sleep(SENSOR_DEEP_SLEEP_TIME);
-#endif
+                    	system_deep_sleep(SENSOR_DEEP_SLEEP_TIME);
+//#if SENSOR_DEVICE
+//                        system_deep_sleep(SENSOR_DEEP_SLEEP_TIME);
+//#endif
                     }
                 } else {
                     os_timer_arm(restart_10ms, 10, 0);
@@ -1082,12 +922,6 @@ json_send(void *arg, ParmType ParmType)
     struct espconn *ptrespconn = arg;
 
     switch (ParmType) {
-#if LIGHT_DEVICE
-
-        case LIGHT_STATUS:
-            json_ws_send((struct jsontree_value *)&PwmTree, "light", pbuf);
-            break;
-#endif
 
 #if PLUG_DEVICE
 
@@ -1499,14 +1333,6 @@ webserver_recv(void *arg, char *pusrdata, unsigned short length)
 
 #endif
 
-#if LIGHT_DEVICE
-                    else if (os_strcmp(pURL_Frame->pFilename, "light") == 0) {
-                        json_send(ptrespconn, LIGHT_STATUS);
-                    }
-                    
-
-#endif
-
                     else if (os_strcmp(pURL_Frame->pFilename, "reboot") == 0) {
                         json_send(ptrespconn, REBOOT);
                     } else {
@@ -1535,13 +1361,9 @@ webserver_recv(void *arg, char *pusrdata, unsigned short length)
 
                 if (os_strcmp(pURL_Frame->pSelect, "config") == 0 &&
                         os_strcmp(pURL_Frame->pCommand, "command") == 0) {
-#if SENSOR_DEVICE
-
-                    if (os_strcmp(pURL_Frame->pFilename, "sleep") == 0) {
-#else
 
                     if (os_strcmp(pURL_Frame->pFilename, "reboot") == 0) {
-#endif
+
 
                         if (pParseBuffer != NULL) {
                             if (restart_10ms != NULL) {
@@ -1553,11 +1375,9 @@ webserver_recv(void *arg, char *pusrdata, unsigned short length)
                             }
 
                             rstparm->pespconn = ptrespconn;
-#if SENSOR_DEVICE
-                            rstparm->parmtype = DEEP_SLEEP;
-#else
+
                             rstparm->parmtype = REBOOT;
-#endif
+
 
                             if (restart_10ms == NULL) {
                                 restart_10ms = (os_timer_t *)os_malloc(sizeof(os_timer_t));
@@ -1633,35 +1453,6 @@ webserver_recv(void *arg, char *pusrdata, unsigned short length)
                         } else {
                             response_send(ptrespconn, false);
                         }
-                    }
-
-#endif
-
-#if LIGHT_DEVICE
-                    else if (os_strcmp(pURL_Frame->pFilename, "light") == 0) {
-                        if (pParseBuffer != NULL) {
-                            struct jsontree_context js;
-
-                            jsontree_setup(&js, (struct jsontree_value *)&PwmTree, json_putchar);
-                            json_parse(&js, pParseBuffer);
-
-                            os_printf("rsp1:%u\n",PostCmdNeeRsp);
-                            if(PostCmdNeeRsp == 0)
-                                PostCmdNeeRsp = 1;
-                            else
-                                response_send(ptrespconn, true);
-                        } else {
-                            response_send(ptrespconn, false);
-                        }
-                    }
-                    else if (os_strcmp(pURL_Frame->pFilename, "reset") == 0) {
-                            response_send(ptrespconn, true);
-                            extern  struct esp_platform_saved_param esp_param;
-                            esp_param.activeflag = 0;
-                            system_param_save_with_protect(ESP_PARAM_START_SEC, &esp_param, sizeof(esp_param));
-                            
-                            system_restore();
-                            system_restart();
                     }
 
 #endif

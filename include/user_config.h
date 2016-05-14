@@ -8,13 +8,6 @@
 
 #if ESP_PLATFORM
 #define PLUG_DEVICE             1
-#define LIGHT_DEVICE            0
-#define SENSOR_DEVICE			0
-
-#if SENSOR_DEVICE
-#define HUMITURE_SUB_DEVICE         1
-#define FLAMMABLE_GAS_SUB_DEVICE    0
-#endif
 
 //#define SERVER_SSL_ENABLE
 //#define CLIENT_SSL_ENABLE
