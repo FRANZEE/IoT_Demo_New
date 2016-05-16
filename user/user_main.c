@@ -16,10 +16,6 @@
 #include "user_devicefind.h"
 #include "user_webserver.h"
 
-#if ESP_PLATFORM
-#include "user_esp_platform.h"
-#endif
-
 void user_rf_pre_init(void)
 {
 }

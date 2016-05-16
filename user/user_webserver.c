@@ -119,7 +119,6 @@ version_get(struct jsontree_context *js_ctx)
 
     if (os_strncmp(path, "hardware", 8) == 0) {
         os_sprintf(string, "0.1");
-#endif
     } else if (os_strncmp(path, "sdk_version", 11) == 0) {
         os_sprintf(string, "%s", system_get_sdk_version());
     } else if (os_strncmp(path, "iot_version", 11) == 0) {
@@ -301,17 +300,6 @@ wifi_station_set(struct jsontree_context *js_ctx, struct jsonparse_state *parser
                     jsonparse_copy_value(parser, buffer, sizeof(buffer));
                     os_memcpy(sta_conf->password, buffer, os_strlen(buffer));
                 }
-
-#if ESP_PLATFORM
-
-                else if (jsonparse_strcmp_value(parser, "token") == 0) {
-                    jsonparse_next(parser);
-                    jsonparse_next(parser);
-                    jsonparse_copy_value(parser, buffer, sizeof(buffer));
-                    user_esp_platform_set_token(buffer);
-                }
-
-#endif
             }
         }
     }
@@ -831,7 +819,7 @@ restart_10ms_cb(void *arg)
                     wifi_set_opmode(STATION_MODE);
 
                     if (rstparm->parmtype == DEEP_SLEEP) {
-                    	system_deep_sleep(SENSOR_DEEP_SLEEP_TIME);
+//                    	system_deep_sleep(SENSOR_DEEP_SLEEP_TIME);
 //#if SENSOR_DEVICE
 //                        system_deep_sleep(SENSOR_DEEP_SLEEP_TIME);
 //#endif
@@ -943,7 +931,7 @@ json_send(void *arg, ParmType ParmType)
             break;
 
         case USER_BIN:
-        	json_ws_send((struct jsontree_value *)&userinfo_tree, "user_info", pbuf);
+        	//json_ws_send((struct jsontree_value *)&userinfo_tree, "user_info", pbuf);
         	break;
         case SCAN: {
             u8 i = 0;
@@ -1393,7 +1381,7 @@ webserver_recv(void *arg, char *pusrdata, unsigned short length)
                     } else if (os_strcmp(pURL_Frame->pFilename, "wifi") == 0) {
                         if (pParseBuffer != NULL) {
                             struct jsontree_context js;
-                            user_esp_platform_set_connect_status(DEVICE_CONNECTING);
+                            //user_esp_platform_set_connect_status(DEVICE_CONNECTING);
 
                             if (restart_10ms != NULL) {
                                 os_timer_disarm(restart_10ms);
