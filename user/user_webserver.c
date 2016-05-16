@@ -1542,9 +1542,9 @@ webserver_listen(void *arg)
 }
 
 /******************************************************************************
- * FunctionName : user_webserver_init
+ * FunctionName : user_webserver_init // инилизация веб-сервера
  * Description  : parameter initialize as a server
- * Parameters   : port -- server port
+ * Parameters   : port -- server port // параметры - порт
  * Returns      : none
 *******************************************************************************/
 void ICACHE_FLASH_ATTR
