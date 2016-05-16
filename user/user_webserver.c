@@ -906,7 +906,7 @@ LOCAL void ICACHE_FLASH_ATTR
 json_send(void *arg, ParmType ParmType)
 {
     char *pbuf = NULL;
-    pbuf = (char *)os_zalloc(jsonSize);
+    //pbuf = (char *)os_zalloc(jsonSize);
     struct espconn *ptrespconn = arg;
 
     switch (ParmType) {
@@ -1086,7 +1086,7 @@ LOCAL void ICACHE_FLASH_ATTR json_scan_cb(void *arg, STATUS status)
     char *pbuf = NULL;
     pbuf = (char *)os_zalloc(jsonSize);
     json_ws_send((struct jsontree_value *)&total_tree, "total", pbuf);
-    data_send(pscaninfo->pespconn, true, pbuf);
+    //data_send(pscaninfo->pespconn, true, pbuf);
     os_free(pbuf);
 }
 
@@ -1542,9 +1542,9 @@ webserver_listen(void *arg)
 }
 
 /******************************************************************************
- * FunctionName : user_webserver_init // инилизация веб-сервера
+ * FunctionName : user_webserver_init // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ-пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
  * Description  : parameter initialize as a server
- * Parameters   : port -- server port // параметры - порт
+ * Parameters   : port -- server port // пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ - пїЅпїЅпїЅпїЅ
  * Returns      : none
 *******************************************************************************/
 void ICACHE_FLASH_ATTR
