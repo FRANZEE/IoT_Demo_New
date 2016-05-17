@@ -26,6 +26,8 @@
 #include "ssl/private_key.h"
 #endif
 
+
+
 LOCAL struct station_config *sta_conf;
 LOCAL struct softap_config *ap_conf;
 
@@ -1534,36 +1536,36 @@ void webserver_discon(void *arg)
 LOCAL void ICACHE_FLASH_ATTR
 webserver_listen(void *arg)
 {
-    struct espconn *pesp_conn = arg;
+    struct espconn *pesp_conn = arg; // создается структура espconn
 
-    espconn_regist_recvcb(pesp_conn, webserver_recv);
+    espconn_regist_recvcb(pesp_conn, webserver_recv); // регистрируем коллбеки
     espconn_regist_reconcb(pesp_conn, webserver_recon);
     espconn_regist_disconcb(pesp_conn, webserver_discon);
 }
 
 /******************************************************************************
- * FunctionName : user_webserver_init // ���������� ���-�������
+ * FunctionName : user_webserver_init // инилизация веб-сервера
  * Description  : parameter initialize as a server
- * Parameters   : port -- server port // ��������� - ����
+ * Parameters   : port -- server port // порт сервера 80 или 443
  * Returns      : none
 *******************************************************************************/
 void ICACHE_FLASH_ATTR
 user_webserver_init(uint32 port)
 {
-    LOCAL struct espconn esp_conn;
-    LOCAL esp_tcp esptcp;
+    LOCAL struct espconn esp_conn; // создаем структуру сетевого подколючения
+    LOCAL esp_tcp esptcp; // создаем структуру tcp
 
-    esp_conn.type = ESPCONN_TCP;
+    esp_conn.type = ESPCONN_TCP; // задаем параметры esp_conn
     esp_conn.state = ESPCONN_NONE;
     esp_conn.proto.tcp = &esptcp;
     esp_conn.proto.tcp->local_port = port;
-    espconn_regist_connectcb(&esp_conn, webserver_listen);
+    espconn_regist_connectcb(&esp_conn, webserver_listen); // регистрируем "коллбек по подключению"
 
 #ifdef SERVER_SSL_ENABLE
     espconn_secure_set_default_certificate(default_certificate, default_certificate_len);
     espconn_secure_set_default_private_key(default_private_key, default_private_key_len);
     espconn_secure_accept(&esp_conn);
 #else
-    espconn_accept(&esp_conn);
+    espconn_accept(&esp_conn); //  espconn_accept - слушает  подключение, принимает структуру подключения
 #endif
 }
