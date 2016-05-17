@@ -48,15 +48,15 @@ LOCAL os_timer_t upgrade_check_timer;
 /******************************************************************************
  * FunctionName : device_get
  * Description  : set up the device information parmer as a JSON format
- * Parameters   : js_ctx -- A pointer to a JSON set up
- * Returns      : result
+ * Parameters   : js_ctx -- A pointer to a JSON set up // указатель на JSON
+ * Returns      : result // ф-я должна возвращать JSON с ответом какой тип устрова он есть
 *******************************************************************************/
 LOCAL int ICACHE_FLASH_ATTR
 device_get(struct jsontree_context *js_ctx)
 {
     const char *path = jsontree_path_name(js_ctx, js_ctx->depth - 1);
 
-    if (os_strncmp(path, "manufacture", 11) == 0) {
+    if (os_strncmp(path, "manufacture", 11) == 0) {  // если совпадает
         jsontree_write_string(js_ctx, "Espressif Systems");
     } else if (os_strncmp(path, "product", 7) == 0) {
 #if PLUG_DEVICE
@@ -71,7 +71,7 @@ LOCAL struct jsontree_callback device_callback =
     JSONTREE_CALLBACK(device_get, NULL);
 /******************************************************************************
  * FunctionName : userbin_get
- * Description  : get up the user bin paramer as a JSON format
+ * Description  : get up the user bin paramer as a JSON format // Для чего нужен userbin?
  * Parameters   : js_ctx -- A pointer to a JSON set up
  * Returns      : result
 *******************************************************************************/
@@ -99,12 +99,12 @@ userbin_get(struct jsontree_context *js_ctx)
 }
 
 LOCAL struct jsontree_callback userbin_callback =
-    JSONTREE_CALLBACK(userbin_get, NULL);
+    JSONTREE_CALLBACK(userbin_get, NULL); // сдест происходит вызов ф-и userbin для чего?
 
 JSONTREE_OBJECT(userbin_tree,
-                JSONTREE_PAIR("status", &userbin_callback),
-                JSONTREE_PAIR("user_bin", &userbin_callback));
-JSONTREE_OBJECT(userinfo_tree,JSONTREE_PAIR("user_info",&userbin_tree));
+                JSONTREE_PAIR("status", &userbin_callback), // userbin get status
+                JSONTREE_PAIR("user_bin", &userbin_callback)); // get user_bin
+JSONTREE_OBJECT(userinfo_tree,JSONTREE_PAIR("user_info",&userbin_tree)); // соеднияются два параментра выше
 /******************************************************************************
  * FunctionName : version_get
  * Description  : set up the device version paramer as a JSON format
@@ -126,7 +126,7 @@ version_get(struct jsontree_context *js_ctx)
     	IOT_VERSION_MINOR,IOT_VERSION_REVISION,device_type,UPGRADE_FALG);
     }
 
-    jsontree_write_string(js_ctx, string);
+    jsontree_write_string(js_ctx, string); // пишем строку в JSON
 
     return 0;
 }
@@ -147,7 +147,7 @@ JSONTREE_OBJECT(info_tree,
                 JSONTREE_PAIR("Device", &device_tree));
 
 JSONTREE_OBJECT(INFOTree,
-                JSONTREE_PAIR("info", &info_tree));
+                JSONTREE_PAIR("info", &info_tree)); // ТАк постепенно формируется JSON ?
 
 LOCAL int ICACHE_FLASH_ATTR
 connect_status_get(struct jsontree_context *js_ctx)
@@ -155,7 +155,7 @@ connect_status_get(struct jsontree_context *js_ctx)
     const char *path = jsontree_path_name(js_ctx, js_ctx->depth - 1);
 
     if (os_strncmp(path, "status", 8) == 0) {
-        jsontree_write_int(js_ctx, user_esp_platform_get_connect_status());
+        jsontree_write_int(js_ctx, user_esp_platform_get_connect_status()); // узнаем статус
     }
 
     return 0;
@@ -173,7 +173,7 @@ JSONTREE_OBJECT(connect_status_tree,
 JSONTREE_OBJECT(con_status_tree,
                 JSONTREE_PAIR("info", &connect_status_tree));
 
-#if PLUG_DEVICE
+//#if PLUG_DEVICE
 /******************************************************************************
  * FunctionName : status_get
  * Description  : set up the device status as a JSON format
@@ -228,7 +228,7 @@ JSONTREE_OBJECT(response_tree,
                 JSONTREE_PAIR("Response", &status_tree));
 JSONTREE_OBJECT(StatusTree,
                 JSONTREE_PAIR("switch", &response_tree));
-#endif
+//#endif
 
 /******************************************************************************
  * FunctionName : wifi_station_get
